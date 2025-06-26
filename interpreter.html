@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Headbang Interpreter</title>
+</head>
+<body>
+  <h1>HEADBANG 2.0 INTERPRETER</h1>
+  <p>Enter your 4-symbol encoded code below (using only <code>!, &, #, ></code> in 4-character blocks).</p>
+  <textarea id="codeInput" placeholder="!!!!&&&&#>!&!..."></textarea>
+  <button onclick="runHeadbang()">Run</button>
+  <h2>Output:</h2>
+  <pre id="output"></pre>
+
+  <script>
+    const symbols = ['!', '&', '#', '>'];
+    const charset = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{};:'\",.<>/?`~ "];
+    
+    const combos = [];
+    function generateCombos() {
+      for (let a of symbols)
+        for (let b of symbols)
+          for (let c of symbols)
+            for (let d of symbols)
+              combos.push(a + b + c + d);
+    }
+
+    generateCombos();
+    const decodeMap = {};
+    combos.forEach((combo, idx) => {
+      if (idx < charset.length) decodeMap[combo] = charset[idx];
+    });
+
+    function decode(code) {
+      const chunks = code.match(/.{1,4}/g) || [];
+      return chunks.map(c => decodeMap[c] || '?').join('');
+    }
+
+    function runHeadbang() {
+      const encoded = document.getElementById('codeInput').value.trim();
+      const js = decode(encoded);
+      let output;
+      try {
+        output = eval(js);
+      } catch (e) {
+        output = e.message;
+      }
+      document.getElementById('output').textContent = js + "\n\nResult:\n" + output;
+    }
+  </script>
+
+  <h2>Encoding System</h2>
+  <p>Each <strong>4-character chunk</strong> made from <code>!, &, #, ></code> represents a single character. There are 256 possible combinations, mapping to:</p>
+  <ul>
+    <li>Uppercase A-Z</li>
+    <li>Lowercase a-z</li>
+    <li>Numbers 0-9</li>
+    <li>Common symbols & punctuation</li>
+    <li>Space</li>
+  </ul>
+  <p>If a chunk doesn’t map to a known character, it becomes <code>?</code>.</p>
+</body>
+</html>
