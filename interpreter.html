@@ -1,54 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Headbang Interpreter</title>
+  <style>
+    body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
+    textarea { width: 100%; height: 100px; background: #222; color: #0f0; }
+    button { padding: 10px; background: #333; color: #0f0; border: none; margin: 10px 0;border-radius: 6px; }
+    pre { background: #222; padding: 10px; white-space: pre-wrap; }
+  </style>
+  <!-- Okay, I am not a web artist, don't judge -->
 </head>
 <body>
-  <h1>HEADBANG 2.0 INTERPRETER</h1>
-  <p>Enter your 4-symbol encoded code below (using only <code>!, &, #, ></code> in 4-character blocks).</p>
-  <textarea id="codeInput" placeholder="!!!!&&&&#>!&!..."></textarea>
-  <button onclick="runHeadbang()">Run</button>
-  <h2>Output:</h2>
-  <pre id="output"></pre>
-
-  <script>
-    const symbols = ['!', '&', '#', '>'];
-    const charset = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{};:'\",.<>/?`~ "];
-    
-    const combos = [];
-    function generateCombos() {
-      for (let a of symbols)
-        for (let b of symbols)
-          for (let c of symbols)
-            for (let d of symbols)
-              combos.push(a + b + c + d);
-    }
-
-    generateCombos();
-    const decodeMap = {};
-    combos.forEach((combo, idx) => {
-      if (idx < charset.length) decodeMap[combo] = charset[idx];
-    });
-
-    function decode(code) {
-      const chunks = code.match(/.{1,4}/g) || [];
-      return chunks.map(c => decodeMap[c] || '?').join('');
-    }
-
-    function runHeadbang() {
-      const encoded = document.getElementById('codeInput').value.trim();
-      const js = decode(encoded);
-      let output;
-      try {
-        output = eval(js);
-      } catch (e) {
-        output = e.message;
-      }
-      document.getElementById('output').textContent = js + "\n\nResult:\n" + output;
-    }
-  </script>
-
-  <h2>Encoding System</h2>
+  <h1>Headbang Interpreter</h1>
+  <hr>
   <p>Each <strong>4-character chunk</strong> made from <code>!, &, #, ></code> represents a single character. There are 256 possible combinations, mapping to:</p>
   <ul>
     <li>Uppercase A-Z</li>
@@ -58,5 +23,73 @@
     <li>Space</li>
   </ul>
   <p>If a chunk doesn’t map to a known character, it becomes <code>?</code>.</p>
+  <hr>
+  <h2>Encode JS → Headbang</h2>
+  <textarea id="jsInput"></textarea>
+  <button onclick="encodeJS()">Encode</button>
+  <pre id="encodedOut"></pre>
+  <h2>Run Headbang Code</h2>
+  <textarea id="hbInput"></textarea>
+  <button onclick="runHeadbang()">Run</button>
+  <pre><strong>Decoded JS:</strong> <div id="decodedOut"></div></pre>
+  <pre><strong>Console Output:</strong> <div id="resultOut"></div></pre>
+  <script>
+    const symbols = ['!', '&', '#', '>'];
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 (){}[].,;:"\'=+-*/<>!&|';
+
+    // he he he
+    const combos = [];
+    for (let a of symbols)
+      for (let b of symbols)
+        for (let c of symbols)
+          for (let d of symbols)
+            combos.push(a + b + c + d);
+
+    const charMap = {};
+    const revMap = {};
+    for (let i = 0; i < charset.length; i++) {
+      charMap[combos[i]] = charset[i];
+      revMap[charset[i]] = combos[i];
+    }
+    // my code at it's finest
+
+    function encodeJS() {
+      const js = document.getElementById("jsInput").value;
+      let encoded = '';
+      for (let c of js) {
+        encoded += revMap[c] || '!!!!';
+      }
+      document.getElementById("encodedOut").innerText = encoded;
+    }
+
+    function runHeadbang() {
+      const code = document.getElementById("hbInput").value;
+      let decoded = '';
+      for (let i = 0; i < code.length; i += 4) {
+        const chunk = code.substr(i, 4);
+        // didn't know this existed, thanks google
+        decoded += charMap[chunk] || '?';
+      }
+      document.getElementById("decodedOut").innerText = decoded;
+
+      // redirect output so that good stuff shows up
+      let output = [];
+      const originalLog = console.log;
+      console.log = function(...args) {
+        output.push(args.join(' '));
+        originalLog(...args);
+      };
+
+      try {
+        const result = eval(`(function(){ ${decoded} })()`);
+        if (result !== undefined) output.push('Return: ' + result);
+      } catch (e) {
+        output.push('Error: ' + e.message);
+      }
+
+      document.getElementById("resultOut").innerText = output.join('\n');
+      console.log = originalLog; // restore original
+    }
+  </script>
 </body>
 </html>
