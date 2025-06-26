@@ -1,49 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Headbang Interpreter</title>
-  <style>
-    body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
-    textarea { width: 100%; height: 100px; background: #222; color: #0f0; }
-    button { padding: 10px; background: #333; color: #0f0; border: none; margin: 10px 0;border-radius: 6px; }
-    pre { background: #222; padding: 10px; white-space: pre-wrap; }
-  </style>
-  <!-- Okay, I am not a web artist, don't judge -->
 </head>
-<body>
+<body style="font-family: monospace; background: #111; color: #eee; padding: 20px;">
   <h1>Headbang Interpreter</h1>
-  <hr>
-  <p>Each <strong>4-character chunk</strong> made from <code>!, &, #, ></code> represents a single character. There are 256 possible combinations, mapping to:</p>
+  <hr />
+  <p>
+    Each <strong>4-character chunk</strong> made from
+    <code>!, &, #, &gt;</code> represents a single character. There are 256 possible
+    combinations, mapping to:
+  </p>
   <ul>
     <li>Uppercase A-Z</li>
     <li>Lowercase a-z</li>
     <li>Numbers 0-9</li>
-    <li>Common symbols & punctuation</li>
+    <li>Common symbols &amp; punctuation</li>
     <li>Space</li>
   </ul>
   <p>If a chunk doesn’t map to a known character, it becomes <code>?</code>.</p>
-  <hr>
+  <hr />
   <h2>Encode JS → Headbang</h2>
-  <textarea id="jsInput"></textarea>
-  <button onclick="encodeJS()">Encode</button>
-  <pre id="encodedOut"></pre>
+  <textarea
+    id="jsInput"
+    style="width: 100%; height: 100px; background: #222; color: #0f0; font-family: monospace;"
+  ></textarea>
+  <button
+    onclick="encodeJS()"
+    style="padding: 10px; background: #333; color: #0f0; border: none; margin: 10px 0; border-radius: 6px;"
+  >
+    Encode
+  </button>
+  <pre
+    id="encodedOut"
+    style="background: #222; padding: 10px; white-space: pre-wrap; font-family: monospace;"
+  ></pre>
   <h2>Run Headbang Code</h2>
-  <textarea id="hbInput"></textarea>
-  <button onclick="runHeadbang()">Run</button>
-  <pre><strong>Decoded JS:</strong> <div id="decodedOut"></div></pre>
-  <pre><strong>Console Output:</strong> <div id="resultOut"></div></pre>
+  <textarea
+    id="hbInput"
+    style="width: 100%; height: 100px; background: #222; color: #0f0; font-family: monospace;"
+  ></textarea>
+  <button
+    onclick="runHeadbang()"
+    style="padding: 10px; background: #333; color: #0f0; border: none; margin: 10px 0; border-radius: 6px;"
+  >
+    Run
+  </button>
+  <pre
+    style="background: #222; padding: 10px; white-space: pre-wrap; font-family: monospace;"
+  >
+    <strong>Decoded JS:</strong>
+    <div id="decodedOut" style="display: inline-block; color: #0f0; margin-left: 5px;"></div>
+  </pre>
+  <pre
+    style="background: #222; padding: 10px; white-space: pre-wrap; font-family: monospace;"
+  >
+    <strong>Console Output:</strong>
+    <div id="resultOut" style="display: inline-block; color: #0f0; margin-left: 5px;"></div>
+  </pre>
+
   <script>
     const symbols = ['!', '&', '#', '>'];
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 (){}[].,;:"\'=+-*/<>!&|';
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 (){}[].,;:"\'=+-*/<>!&|';
 
-    // he he he
     const combos = [];
     for (let a of symbols)
       for (let b of symbols)
         for (let c of symbols)
-          for (let d of symbols)
-            combos.push(a + b + c + d);
+          for (let d of symbols) combos.push(a + b + c + d);
 
     const charMap = {};
     const revMap = {};
@@ -51,31 +77,28 @@
       charMap[combos[i]] = charset[i];
       revMap[charset[i]] = combos[i];
     }
-    // my code at it's finest
 
     function encodeJS() {
-      const js = document.getElementById("jsInput").value;
+      const js = document.getElementById('jsInput').value;
       let encoded = '';
       for (let c of js) {
         encoded += revMap[c] || '!!!!';
       }
-      document.getElementById("encodedOut").innerText = encoded;
+      document.getElementById('encodedOut').innerText = encoded;
     }
 
     function runHeadbang() {
-      const code = document.getElementById("hbInput").value;
+      const code = document.getElementById('hbInput').value;
       let decoded = '';
       for (let i = 0; i < code.length; i += 4) {
         const chunk = code.substr(i, 4);
-        // didn't know this existed, thanks google
         decoded += charMap[chunk] || '?';
       }
-      document.getElementById("decodedOut").innerText = decoded;
+      document.getElementById('decodedOut').innerText = decoded;
 
-      // redirect output so that good stuff shows up
       let output = [];
       const originalLog = console.log;
-      console.log = function(...args) {
+      console.log = function (...args) {
         output.push(args.join(' '));
         originalLog(...args);
       };
@@ -87,8 +110,8 @@
         output.push('Error: ' + e.message);
       }
 
-      document.getElementById("resultOut").innerText = output.join('\n');
-      console.log = originalLog; // restore original
+      document.getElementById('resultOut').innerText = output.join('\n');
+      console.log = originalLog;
     }
   </script>
 </body>
